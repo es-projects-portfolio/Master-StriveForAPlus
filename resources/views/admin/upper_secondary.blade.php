@@ -1,44 +1,11 @@
 <x-app-layout>
-    @if(auth()->user()->is_super_admin)
+    @if(auth()->user()->is_admin && auth()->user()->category == 'upper_secondary')
         <x-slot name="header">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Admin') }}
+                {{ __('Upper Secondary Admin') }}
             </h2>
         </x-slot>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                    @if(session('success_course'))
-                        <div class="mb-4 font-medium text-sm text-green-600">
-                            {{ session('success_course') }}
-                        </div>
-                    @endif
-                    <!-- Create Course -->
-                    <div class="mb-6">
-                        <h3 class="text-lg font-semibold mb-4">Create Course</h3>
-                        <form action="{{ route('admin.createCourse') }}" method="POST">
-                            @csrf
-                            <div class="mt-4">
-                                <x-input-label for="course_name">Course Name</x-input-label>
-                                <input type="text" id="course_name" name="course_name" placeholder="Course Name" oninput="this.value = 'Course ' + this.value.replace(/^Course\s*/, '')" class="rounded">
-                            </div>
-                            <div class="mt-4">
-                                <x-input-label for="category">Category</x-input-label>
-                                <select id="category" name="category" class="rounded">
-                                    <option value="primary">Primary</option>
-                                    <option value="lower_secondary">Lower Secondary</option>
-                                    <option value="upper_secondary">Upper Secondary</option>
-                                </select>
-                            </div>
-                            <div>
-                                <x-primary-button class="mt-4" type='submit'>{{ __('Submit') }}</x-primary-button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
@@ -59,7 +26,7 @@
                             <div class="mt-4">
                                 <x-input-label for="course_id">Select Course</x-input-label>
                                 <select id="course_id" name="course_id" class="rounded">
-                                    @foreach($courses as $course)
+                                    @foreach($courses->where('category', 'upper_secondary') as $course)
                                         <option value="{{ $course->id }}">{{ $course->course_name }}</option>
                                     @endforeach
                                 </select>
@@ -96,7 +63,7 @@
                             <div class="mt-4">
                                 <x-input-label for="section_id">Select Course | Section</x-input-label>
                                 <select id="section_id" name="section_id" class="rounded">
-                                    @foreach($sections as $section)
+                                    @foreach($sections->where('course.category', 'upper_secondary') as $section)
                                         <option value="{{ $section->id }}">{{ $section->course->course_name }} | Section {{ $section->section_number }}</option>
                                     @endforeach
                                 </select>
@@ -119,22 +86,6 @@
                             </div>
                         </form>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <script>
-            document.getElementById('add-student-btn').addEventListener('click', function() {
-                var container = document.getElementById('students-container');
-                var newSelect = document.querySelector('.student-select').cloneNode(true);
-                container.appendChild(newSelect);
-            });
-        </script>
-    @else
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                    <h3 class="text-lg font-semibold mb-4">You do not have permission to access this page.</h3>
                 </div>
             </div>
         </div>

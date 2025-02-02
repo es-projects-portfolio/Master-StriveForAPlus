@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('courses', function (Blueprint $table) {
             $table->id(); // Changed from $table->id('course_id');
             $table->string('course_name');
+            $table->enum('category', ['primary', 'lower_secondary', 'upper_secondary']);
             $table->timestamps();
         });
     }

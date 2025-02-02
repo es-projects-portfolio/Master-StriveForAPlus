@@ -52,6 +52,17 @@
             <x-input-error :messages="$errors->get('role')" class="mt-2" />
         </div>
 
+        <!-- Category -->
+        <div class="mt-4">
+            <x-input-label for="category" :value="__('Category')" />
+            <select id="category" name="category" class="block mt-1 w-full rounded-md" required>
+            <option value="primary">{{ __('Primary') }}</option>
+            <option value="lower_secondary">{{ __('Lower Secondary') }}</option>
+            <option value="upper_secondary">{{ __('Upper Secondary') }}</option>
+            </select>
+            <x-input-error :messages="$errors->get('role')" class="mt-2" />
+        </div>
+
         <div class="flex items-center justify-end mt-4">
             <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
                 {{ __('Already registered?') }}

@@ -15,10 +15,24 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    @if(Auth::user()->is_admin)
+                    @if(Auth::user()->is_super_admin)
                         <x-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">
                             {{ __('Admin') }}
                         </x-nav-link>
+                    @elseif(Auth::user()->is_admin)
+                        @if(Auth::user()->category == 'primary')
+                            <x-nav-link :href="route('admin.primary')" :active="request()->routeIs('admin.primary')">
+                                {{ __('Primary Admin') }}
+                            </x-nav-link>
+                        @elseif(Auth::user()->category == 'lower_secondary')
+                            <x-nav-link :href="route('admin.lower_secondary')" :active="request()->routeIs('admin.lower_secondary')">
+                                {{ __('Lower Secondary Admin') }}
+                            </x-nav-link>
+                        @elseif(Auth::user()->category == 'upper_secondary')
+                            <x-nav-link :href="route('admin.upper_secondary')" :active="request()->routeIs('admin.upper_secondary')">
+                                {{ __('Upper Secondary Admin') }}
+                            </x-nav-link>
+                        @endif
                     @endif
                     @if(Auth::user()->role === 'tutor')
                         <x-nav-link :href="route('materials.create')" :active="request()->routeIs('materials.create')">
@@ -83,10 +97,24 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            @if(Auth::user()->is_admin)
+            @if(Auth::user()->is_super_admin)
                 <x-responsive-nav-link :href="route('admin.index')" :active="request()->routeIs('admin.index')">
                     {{ __('Admin') }}
                 </x-responsive-nav-link>
+            @elseif(Auth::user()->is_admin)
+                @if(Auth::user()->category == 'primary')
+                    <x-responsive-nav-link :href="route('admin.primary')" :active="request()->routeIs('admin.primary')">
+                        {{ __('Primary Admin') }}
+                    </x-responsive-nav-link>
+                @elseif(Auth::user()->category == 'lower_secondary')
+                    <x-responsive-nav-link :href="route('admin.lower_secondary')" :active="request()->routeIs('admin.lower_secondary')">
+                        {{ __('Lower Secondary Admin') }}
+                    </x-responsive-nav-link>
+                @elseif(Auth::user()->category == 'upper_secondary')
+                    <x-responsive-nav-link :href="route('admin.upper_secondary')" :active="request()->routeIs('admin.upper_secondary')">
+                        {{ __('Upper Secondary Admin') }}
+                    </x-responsive-nav-link>
+                @endif
             @endif
         </div>
 

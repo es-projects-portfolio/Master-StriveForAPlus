@@ -18,8 +18,10 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['student', 'tutor'])->default('student');
+            $table->enum('role', ['student', 'tutor'])->default('student')->nullable();
+            $table->enum('category', ['primary', 'lower_secondary', 'upper_secondary'])->nullable();
             $table->boolean('is_admin')->default(false);
+            $table->boolean('is_super_admin')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

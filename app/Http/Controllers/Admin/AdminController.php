@@ -23,6 +23,45 @@ class AdminController extends Controller
         return view('admin.index', compact('users', 'courses', 'sections'));
     }
 
+    public function showPrimaryAdminPage()
+    {
+        $courses = Course::where('category', 'primary')->get();
+        $sections = Section::all();
+        $users = User::all();
+
+        return view('admin.primary', [
+            'courses' => $courses,
+            'sections' => $sections,
+            'users' => $users,
+        ]);
+    }
+
+    public function showLowerSecondaryAdminPage()
+    {
+        $courses = Course::where('category', 'lower_secondary')->get();
+        $sections = Section::all();
+        $users = User::all();
+
+        return view('admin.lower_secondary', [
+            'courses' => $courses,
+            'sections' => $sections,
+            'users' => $users,
+        ]);
+    }
+
+    public function showUpperSecondaryAdminPage()
+    {
+        $courses = Course::where('category', 'upper_secondary')->get();
+        $sections = Section::all();
+        $users = User::all();
+
+        return view('admin.upper_secondary', [
+            'courses' => $courses,
+            'sections' => $sections,
+            'users' => $users,
+        ]);
+    }
+
     /**
      * Create a new course.
      */
@@ -30,10 +69,12 @@ class AdminController extends Controller
     {
         $request->validate([
             'course_name' => 'required|string|max:255',
+            'category' => 'required|in:primary,lower_secondary,upper_secondary',
         ]);
 
         $course = Course::create([
             'course_name' => $request->course_name,
+            'category' => $request->category,
         ]);
 
         return redirect()->back()->with('success_course', 'Course created successfully!');

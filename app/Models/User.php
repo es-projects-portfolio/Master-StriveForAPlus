@@ -24,7 +24,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'category',
         'is_admin',
+        'is_super_admin',
     ];
 
     /**
@@ -57,7 +59,7 @@ class User extends Authenticatable
 
     public function sections(): HasMany
     {
-        return $this->hasMany(Section::class);
+        return $this->hasMany(Section::class, 'tutor_id');
     }
 
     public function studentsInSection(): HasMany

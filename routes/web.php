@@ -24,6 +24,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Admin routes
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('/admin/primary', [AdminController::class, 'showPrimaryAdminPage'])->name('admin.primary');
+    Route::get('/admin/lower-secondary', [AdminController::class, 'showLowerSecondaryAdminPage'])->name('admin.lower_secondary');
+    Route::get('/admin/upper-secondary', [AdminController::class, 'showUpperSecondaryAdminPage'])->name('admin.upper_secondary');
     Route::post('/admin/create-course', [AdminController::class, 'createCourse'])->name('admin.createCourse');
     Route::post('/admin/create-section', [AdminController::class, 'createSection'])->name('admin.createSection');
     Route::post('/admin/assign-student-to-section', [AdminController::class, 'assignStudentsToSection'])->name('admin.assignStudentToSection');
