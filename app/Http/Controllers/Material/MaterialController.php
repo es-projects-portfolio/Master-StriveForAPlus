@@ -26,19 +26,26 @@ class MaterialController extends Controller
 
         if ($user->role === 'tutor') {
             // Tutors can see all materials they created
-            $query->orderBy('created_at', 'desc');
+            $query->where('user_id', $user->id)->orderBy('created_at', 'desc');
         } else {
-            // Students can see materials visible to all or in their sections
-            $query->where('visible_to_all', true)
-                ->orWhereHas('section.studentsInSection', function ($query) use ($user) {
-                    $query->where('student_id', $user->id);
-                })
-                ->orderBy('created_at', 'desc');
+            // Students can see materials visible to all, in their category, or in their sections
+            $query->where(function ($query) use ($user) {
+                $query->where('visible_to_all', true)
+                    ->orWhere(function ($query) use ($user) {
+                        $query->where('visible_to_all_in_category', true)
+                            ->whereHas('section.course', function ($query) use ($user) {
+                                $query->where('category', $user->category);
+                            });
+                    })
+                    ->orWhereHas('section.studentsInSection', function ($query) use ($user) {
+                        $query->where('student_id', $user->id);
+                    });
+            })->orderBy('created_at', 'desc');
         }
 
         // Apply filters
-        if ($request->filled('category')) {
-            $query->where('category', $request->category);
+        if ($request->filled('tag')) {
+            $query->where('tag', $request->tag);
         }
 
         if ($request->filled('course_section')) {
@@ -48,8 +55,10 @@ class MaterialController extends Controller
         if ($request->filled('visibility')) {
             if ($request->visibility === 'public') {
                 $query->where('visible_to_all', true);
-            } else {
-                $query->where('visible_to_all', false);
+            } elseif ($request->visibility === 'category') {
+                $query->where('visible_to_all_in_category', true);
+            } elseif ($request->visibility === 'section') {
+                $query->where('visible_to_all', false)->where('visible_to_all_in_category', false);
             }
         }
 
@@ -60,12 +69,15 @@ class MaterialController extends Controller
         $materials = $query->get();
 
         $sections = Section::all();
-        $authors = User::where('role', 'tutor')->get();
+        $courses = Course::all();
+
+        $authors = User::whereIn('role', ['tutor', 'super_admin'])->get();
 
         return view('materials.index', [
             'materials' => $materials,
             'sections' => $sections,
             'authors' => $authors,
+            'courses' => $courses,
         ]);
     }
 
@@ -104,16 +116,18 @@ class MaterialController extends Controller
         // Validate the request data
         $validated = $request->validate([
             'visible_to_all' => 'nullable|boolean',
+            'visible_to_all_in_category' => 'nullable|boolean',
             'section_id' => 'nullable|exists:sections,id',
             'message' => 'required|string|max:255',
             'image' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:2048',
             'video' => 'nullable|file|mimes:mp4,mov,avi|max:10240',
             'file_path' => 'nullable|file|mimes:csv,json,pdf,docx,xlsx|max:5120',
-            'category' => 'required|in:past-year,assignment,quiz,exam,notes,announcement',
+            'tag' => 'required|in:past-year,assignment,quiz,exam,notes,announcement',
         ]);
 
         // Set visibility to 'all' if checkbox is checked
-        $validated['visible_to_all'] = $request->has('visible_to_all');
+        $validated['visible_to_all'] = $request->has('visible_to_all') && ($request->user()->is_admin || $request->user()->is_super_admin);
+        $validated['visible_to_all_in_category'] = $request->has('visible_to_all_in_category') && !$validated['visible_to_all'];
 
         // Store the uploaded files
         if ($request->hasFile('image')) {
@@ -169,6 +183,11 @@ class MaterialController extends Controller
             return view('materials.show', ['material' => $material]);
         }
 
+        // Check if the material is visible to all in the category
+        if ($material->visible_to_all_in_category && $material->section->course->category === $user->sections->first()->course->category) {
+            return view('materials.show', ['material' => $material]);
+        }
+
         return redirect(route('materials.index'))->with('error', 'You do not have permission to view this material.');
     }
 
@@ -187,7 +206,6 @@ class MaterialController extends Controller
         // Authorize the user
         Gate::authorize('update', $material);
 
-        $user = Auth::user();
         $sections = Section::where('tutor_id', $user->id)->get();
 
         return view('materials.edit', [
@@ -212,16 +230,18 @@ class MaterialController extends Controller
         // Validate the request data
         $validated = $request->validate([
             'visible_to_all' => 'nullable|boolean',
+            'visible_to_all_in_category' => 'nullable|boolean',
             'section_id' => 'nullable|exists:sections,id',
             'message' => 'required|string|max:255',
             'image' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:2048',
             'video' => 'nullable|file|mimes:mp4,mov,avi|max:10240',
             'file_path' => 'nullable|file|mimes:csv,json,pdf,docx,xlsx|max:5120',
-            'category' => 'required|in:past-year,assignment,quiz,exam,notes,announcement',
+            'tag' => 'required|in:past-year,assignment,quiz,exam,notes,announcement',
         ]);
 
         // Set visibility to 'all' if checkbox is checked
-        $validated['visible_to_all'] = $request->has('visible_to_all');
+        $validated['visible_to_all'] = $request->has('visible_to_all') && ($request->user()->role === 'tutor' || $request->user()->is_admin || $request->user()->is_super_admin);
+        $validated['visible_to_all_in_category'] = $request->has('visible_to_all_in_category') && !$validated['visible_to_all'];
 
         // Store the uploaded files
         if ($request->hasFile('image')) {

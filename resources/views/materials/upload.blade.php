@@ -50,11 +50,21 @@
                 </button>
             </div>
 
+            @if(auth()->user()->is_admin || auth()->user()->is_super_admin)
             <div class="mt-4">
                 <label for="visible_to_all" class="block text-sm font-medium text-gray-700">{{ __('Visibility') }}</label>
                 <div class="flex items-center">
-                    <input type="checkbox" name="visible_to_all" id="visible_to_all" value="1" class="text-sm text-gray-700 mr-4 px-2" checked>
+                    <input type="checkbox" name="visible_to_all" id="visible_to_all" value="1" class="text-sm text-gray-700 mr-4 px-2">
                     <label for="visible_to_all" class="text-sm text-gray-700 px-2">{{ __('All') }}</label>
+                </div>
+            </div>
+            @endif
+
+            <div class="mt-4">
+                <label for="visible_to_all_in_category" class="block text-sm font-medium text-gray-700">{{ __('Visible to All in ' . ucfirst(auth()->user()->sections->first()->course->category)) }}</label>
+                <div class="flex items-center">
+                    <input type="checkbox" name="visible_to_all_in_category" id="visible_to_all_in_category" value="1" class="text-sm text-gray-700 mr-4 px-2">
+                    <label for="visible_to_all_in_category" class="text-sm text-gray-700 px-2">{{ __('All in ' . ucfirst(auth()->user()->sections->first()->course->category)) }}</label>
                 </div>
             </div>
 
@@ -68,16 +78,16 @@
             </div>
             
             <div class="mt-4">
-                <label for="category" class="block text-sm font-medium text-gray-700">{{ __('Category') }}</label>
+                <label for="tag" class="block text-sm font-medium text-gray-700">{{ __('Category') }}</label>
                 <div class="grid grid-cols-2 gap-3 mr-2">
-                    @foreach(['past-year', 'assignment', 'quiz', 'exam', 'notes', 'announcement'] as $category)
+                    @foreach(['past-year', 'assignment', 'quiz', 'exam', 'notes', 'announcement'] as $tag)
                         <label class="inline-flex items-center">
-                            <input type="radio" name="category" value="{{ $category }}" class="form-radio text-gray-700" {{ old('category') == $category ? 'checked' : '' }} required>
-                            <span class="ml-2 px-2">{{ ucfirst($category) }}</span>
+                            <input type="radio" name="tag" value="{{ $tag }}" class="form-radio text-gray-700" {{ old('tag') == $tag ? 'checked' : '' }} required>
+                            <span class="ml-2 px-2">{{ ucfirst($tag) }}</span>
                         </label>
                     @endforeach
                 </div>
-                <x-input-error :messages="$errors->get('category')" class="mt-2" />
+                <x-input-error :messages="$errors->get('tag')" class="mt-2" />
             </div>
 
             <!-- Error messages and preview section -->
@@ -89,10 +99,24 @@
     <script>
         document.getElementById('visible_to_all').addEventListener('change', function(event) {
             const sectionField = document.getElementById('section-field');
+            const visibleToAllInCategory = document.getElementById('visible_to_all_in_category');
             if (event.target.checked) {
                 sectionField.style.display = 'none';
+                visibleToAllInCategory.checked = false;
+                visibleToAllInCategory.disabled = true;
             } else {
                 sectionField.style.display = 'block';
+                visibleToAllInCategory.disabled = false;
+            }
+        });
+
+        document.getElementById('visible_to_all_in_category').addEventListener('change', function(event) {
+            const visibleToAll = document.getElementById('visible_to_all');
+            if (event.target.checked) {
+                visibleToAll.checked = false;
+                visibleToAll.disabled = true;
+            } else {
+                visibleToAll.disabled = false;
             }
         });
 
